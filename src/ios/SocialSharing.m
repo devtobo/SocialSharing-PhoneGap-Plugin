@@ -464,8 +464,17 @@ static NSString *const kShareOptionUrl = @"url";
 
 -(void)cycleTheGlobalMailComposer {
   // we are cycling the damned GlobalMailComposer: http://stackoverflow.com/questions/25604552/i-have-real-misunderstanding-with-mfmailcomposeviewcontroller-in-swift-ios8-in/25604976#25604976
-  self.globalMailComposer = nil;
-  self.globalMailComposer = [[MFMailComposeViewController alloc] init];
+  if (![NSThread isMainThread]) {
+    // Make sure this is called on the main thread
+    __weak SocialSharing* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf cycleTheGlobalMailComposer];
+    });
+  }
+  else {
+    self.globalMailComposer = nil;
+    self.globalMailComposer = [[MFMailComposeViewController alloc] init];
+  }
 }
 
 - (bool)canShareViaSMS {
